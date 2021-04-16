@@ -44,8 +44,11 @@ type EchoService struct {
 
 func (p *EchoService) Message(request string, reply *string) error {
 	*reply = "echo:" + request
-	// 模拟运行时间
-	time.Sleep(time.Second*2)
+	// 使用 . 模拟运行时间，. 越多耗时越长
+	dotCount := time.Duration(strings.Count(request, "."))
+	duration := dotCount * time.Second
+	log.Print("执行时间：", duration)
+	time.Sleep(duration)
 	if strings.Contains(request, "fuck") {
 		return errors.New("watch you mouth")
 	}
