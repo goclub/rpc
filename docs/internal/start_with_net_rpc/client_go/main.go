@@ -27,6 +27,7 @@ func main() {
 	endTime := time.Now()
 	log.Print("耗时：", endTime.Sub(startTime).String())
 	// 这里的耗时会是 2s ，如果将 doSome() 中的 time.Second * 1 改成 time.Second * 3 则会变成耗时3秒
+	// 使用 client.Go() 能让两个耗时操作同步执行，以提高响服务应速度
 }
 
 func doSome() {
