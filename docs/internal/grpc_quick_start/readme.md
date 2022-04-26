@@ -1,9 +1,10 @@
 # 简单熟悉一下 grpc
 
+> 扩展阅读: [gRPC 扩展错误处理](https://blog.cong.moe/post/2021-12-29-grpc-richer-error-handling/)
 
 ## 定义接口
 
-编写 [echoproto](./pbecho/echo.proto)
+编写 [echoproto](../pbecho/echo.proto)
 
 > 参考文档：https://developers.google.com/protocol-buffers/docs/gotutorial
 
@@ -11,7 +12,7 @@
 
 安装文档： https://www.grpc.io/docs/languages/go/quickstart/
 
-执行命令[gen.sh](./pbecho/gen.sh)
+执行命令[gen.sh](../pbecho/gen.sh)
 
 ## 实现服务端
 

@@ -2,39 +2,48 @@ package main
 
 import (
 	"context"
-	"errors"
-	"github.com/goclub/rpc/docs/internal/grpc/pbecho"
+	"encoding/json"
+	xerr "github.com/goclub/error"
+	"github.com/goclub/rpc/docs/internal/echo"
+	"github.com/goclub/rpc/docs/internal/pbecho"
 	"google.golang.org/grpc"
+	grpcstatus "google.golang.org/grpc/status"
 	"log"
 	"net"
-	"strings"
 )
 
 func main() {
-	server := grpc.NewServer()
-	pbecho.RegisterEchoServiceServer(server, &EchoService{})
+	server := grpc.NewServer(
+		// 注册错误拦截器
+		grpc.UnaryInterceptor(errInterceptor),
+	)
+	pbecho.RegisterEchoServiceServer(server, &echo.EchoService{})
 	addr := ":9292"
 	log.Print("tcp localhost" + addr)
-	listener, err := net.Listen("tcp", ":9292") ; if err != nil {
+	listener, err := net.Listen("tcp", ":9292")
+	if err != nil {
 		panic(err)
 	}
-	err = server.Serve(listener) ; if err != nil {
+	err = server.Serve(listener)
+	if err != nil {
 		panic(err)
 	}
 }
 
-
-
-type EchoService struct {
-
-}
-
-func (p *EchoService) Echo(ctx context.Context, in *pbecho.MessageRequest) (reply *pbecho.MessageReply, err error) {
-	// reply 不能为 nil ,否则会报错 grpc : error while marshaling: proto: Marshal called with nil
-	reply = &pbecho.MessageReply{}
-	reply.Message = "echo:" + in.Message
-	if strings.Contains(in.Message, "fuck") {
-		return reply, errors.New("watch you mouth")
+func errInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	// 继续处理请求
+	result, err := handler(ctx, req)
+	if err != nil {
+		if reject, ok := xerr.AsReject(err); ok {
+			message := ""
+			errResp, err := json.Marshal(reject.Resp())
+			if err != nil {
+				message = err.Error()
+			} else {
+				message = string(errResp)
+			}
+			return result, grpcstatus.New(100, message).Err()
+		}
 	}
-	return reply, nil
+	return result, err
 }
